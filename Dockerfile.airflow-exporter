@@ -8,5 +8,5 @@ RUN pip install airflow-exporter
 # Expose the default port used by the exporter
 EXPOSE 9112
 
-# Run the exporter
-CMD ["airflow-exporter"]
+# Run it directly via Python module
+CMD ["python", "-m", "airflow_exporter"]
