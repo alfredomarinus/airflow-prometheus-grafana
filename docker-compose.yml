@@ -35,7 +35,7 @@ x-airflow-common: &airflow-common
 
 services:
   airflow-webserver:
-    <<: *airflow-base
+    <<: *airflow-common
     container_name: airflow-webserver
     ports:
       - "8080:8080"
@@ -52,7 +52,7 @@ services:
       start_period: 60s
 
   airflow-scheduler:
-    <<: *airflow-base
+    <<: *airflow-common
     container_name: airflow-scheduler
     environment:
       *airflow-common-env
@@ -67,7 +67,7 @@ services:
       start_period: 60s
   
   airflow-worker:
-    <<: *airflow-base
+    <<: *airflow-common
     container_name: airflow-worker
     environment:
       *airflow-common-env
@@ -82,7 +82,7 @@ services:
       start_period: 60s
 
   airflow-triggerer:
-    <<: *airflow-base
+    <<: *airflow-common
     container_name: airflow-triggerer
     environment:
       *airflow-common-env
