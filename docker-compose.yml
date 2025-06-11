@@ -95,15 +95,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-
-  # airflow-exporter:
-  #   image: custom-airflow-exporter
-  #   container_name: airflow-exporter
-  #   ports:
-  #     - "9112:9112"
-  #   depends_on:
-  #     - postgres
-
+  
   pyspark-notebook:
     image: jupyter/pyspark-notebook
     container_name: pyspark-notebook
@@ -197,6 +189,8 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml    
+    networks:
+      - data-stack
 
   grafana:
     image: grafana/grafana
@@ -205,6 +199,8 @@ services:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
+    networks:
+      - data-stack
 
   minio:
     image: minio/minio
