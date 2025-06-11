@@ -1,0 +1,242 @@
+version: "3.9"
+
+x-airflow-common-env: &airflow-common-env
+  AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+  AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres/${POSTGRES_DB}
+  AIRFLOW__CORE__CELERY_BROKER_URL: redis://redis:6379/0
+  AIRFLOW__CORE__CELERY_RESULT_BACKEND: redis://redis:6379/0
+  AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+  AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
+  PYTHONPATH: /opt/airflow/scripts:/opt/airflow/dags
+
+x-airflow-common-volumes: &airflow-common-volumes
+  - ./logs:/opt/airflow/logs
+  - ./airflow/dags:/opt/airflow/dags:ro
+  - ./plugins:/opt/airflow/plugins:ro
+  - ./scripts:/opt/airflow/scripts:ro
+
+x-airflow-common: &airflow-common
+  build:
+    context: ./airflow
+    dockerfile: Dockerfile
+  user: "${AIRFLOW_UID:-50000}:0"
+  restart: unless-stopped
+  env_file:
+    - .env
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+    minio:
+      condition: service_healthy
+  networks:
+    - data-stack
+
+services:
+  airflow-webserver:
+    <<: *airflow-base
+    container_name: airflow-webserver
+    ports:
+      - "8080:8080"
+    environment:
+      *airflow-common-env
+    volumes:
+      *airflow-common-volumes
+    command: bash /opt/airflow/scripts/airflow-entrypoint.sh
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  airflow-scheduler:
+    <<: *airflow-base
+    container_name: airflow-scheduler
+    environment:
+      *airflow-common-env
+    volumes:
+      *airflow-common-volumes
+    command: airflow scheduler
+    healthcheck:
+      test: ["CMD-SHELL", "airflow jobs check --job-type SchedulerJob --hostname $(hostname)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+  
+  airflow-worker:
+    <<: *airflow-base
+    container_name: airflow-worker
+    environment:
+      *airflow-common-env
+    volumes:
+      *airflow-common-volumes
+    command: celery worker
+    healthcheck:
+      test: ["CMD-SHELL", 'celery --app airflow.providers.celery.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}" || celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  airflow-triggerer:
+    <<: *airflow-base
+    container_name: airflow-triggerer
+    environment:
+      *airflow-common-env
+    volumes:
+      *airflow-common-volumes
+    command: airflow triggerer
+    healthcheck:
+      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  airflow-exporter:
+    image: epoch8/airflow-exporter
+    ports:
+      - "9112:9112"
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=CeleryExecutor
+
+  pyspark-notebook:
+    image: jupyter/pyspark-notebook
+    container_name: pyspark-notebook
+    restart: unless-stopped
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    ports:
+      - "4040:4040"
+      - "8888:8888"
+    environment:
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=jupyter
+      - PYSPARK_DRIVER_PYTHON_OPTS=notebook
+      - SPARK_MASTER=spark://spark-master:7077
+      - JUPYTER_ENABLE_LAB=yes
+    volumes:
+      - ./notebooks:/home/jovyan/work
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:8888"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - data-stack
+  
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - data-stack
+  
+  flower:
+    image: mher/flower:latest
+    container_name: flower
+    depends_on:
+      redis:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_PORT=5555
+      - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider -q http://${FLOWER_USERNAME}:${FLOWER_PASSWORD}@127.0.0.1:5555 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    networks:
+      - data-stack
+
+  redis:
+    image: redis:6
+    container_name: redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - data-stack
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  minio:
+    image: minio/minio
+    container_name: minio
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - data-stack
+
+volumes:
+  postgres-db-volume:
+  redis-data:
+  minio-data:
+  grafana-storage:
+
+networks:
+  data-stack:
+    driver: bridge
+    name: data-stack
