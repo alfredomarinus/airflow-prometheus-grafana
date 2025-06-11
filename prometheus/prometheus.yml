@@ -1,7 +1,8 @@
-global:
-  scrape_interval: 15s
-
 scrape_configs:
-  - job_name: 'airflow'
+  - job_name: 'airflow-webserver'
+    metrics_path: /admin/metrics
     static_configs:
-      - targets: ['airflow-exporter:9112']
+      - targets: ['airflow-webserver:8080']
+    basic_auth:
+      username: admin
+      password: admin
