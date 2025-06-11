@@ -96,13 +96,13 @@ services:
       retries: 5
       start_period: 60s
 
-  airflow-exporter:
-    image: custom-airflow-exporter
-    container_name: airflow-exporter
-    ports:
-      - "9112:9112"
-    depends_on:
-      - postgres
+  # airflow-exporter:
+  #   image: custom-airflow-exporter
+  #   container_name: airflow-exporter
+  #   ports:
+  #     - "9112:9112"
+  #   depends_on:
+  #     - postgres
 
   pyspark-notebook:
     image: jupyter/pyspark-notebook
