@@ -107,9 +107,6 @@ services:
     image: jupyter/pyspark-notebook
     container_name: pyspark-notebook
     restart: unless-stopped
-    depends_on:
-      spark-master:
-        condition: service_healthy
     ports:
       - "4040:4040"
       - "8888:8888"
