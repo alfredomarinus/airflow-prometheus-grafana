@@ -10,16 +10,15 @@ x-airflow-common-env: &airflow-common-env
   PYTHONPATH: /opt/airflow/scripts:/opt/airflow/dags
 
 x-airflow-common-volumes: &airflow-common-volumes
-  - ./logs:/opt/airflow/logs
-  - ./airflow/dags:/opt/airflow/dags:ro
-  - ./plugins:/opt/airflow/plugins:ro
-  - ./scripts:/opt/airflow/scripts:ro
+  - ./airflow/logs:/opt/airflow/logs
+  - ./airflow/dags:/opt/airflow/dags
+  - ./airflow/plugins:/opt/airflow/plugins
+  - ./airflow/scripts:/opt/airflow/scripts
 
 x-airflow-common: &airflow-common
   build:
     context: ./airflow
     dockerfile: Dockerfile
-  user: "${AIRFLOW_UID:-50000}:0"
   restart: unless-stopped
   env_file:
     - .env
@@ -218,7 +217,7 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:9000/minio/health/ready"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:9001/minio/health/ready"]
       interval: 10s
       timeout: 5s
       retries: 5
