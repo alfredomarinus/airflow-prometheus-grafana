@@ -6,6 +6,7 @@ x-airflow-common-env: &airflow-common-env
   AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
   AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
   PYTHONPATH: /opt/airflow/scripts:/opt/airflow/dags
+  RATELIMIT_STORAGE_URL: redis://redis:6379
 
 x-airflow-common-volumes: &airflow-common-volumes
   - ./airflow/logs:/opt/airflow/logs
@@ -13,7 +14,7 @@ x-airflow-common-volumes: &airflow-common-volumes
   - ./airflow/plugins:/opt/airflow/plugins
   - ./airflow/scripts:/opt/airflow/scripts
 
-x-airflow-common: &airflow-common
+x-airflow-base: &airflow-base
   build:
     context: ./airflow
     dockerfile: Dockerfile
@@ -32,7 +33,7 @@ x-airflow-common: &airflow-common
 
 services:
   airflow-webserver:
-    <<: *airflow-common
+    <<: *airflow-base
     container_name: airflow-webserver
     ports:
       - "8080:8080"
@@ -49,7 +50,7 @@ services:
       start_period: 60s
 
   airflow-scheduler:
-    <<: *airflow-common
+    <<: *airflow-base
     container_name: airflow-scheduler
     environment:
       *airflow-common-env
@@ -64,7 +65,7 @@ services:
       start_period: 60s
   
   airflow-worker:
-    <<: *airflow-common
+    <<: *airflow-base
     container_name: airflow-worker
     environment:
       *airflow-common-env
@@ -79,7 +80,7 @@ services:
       start_period: 60s
 
   airflow-triggerer:
-    <<: *airflow-common
+    <<: *airflow-base
     container_name: airflow-triggerer
     environment:
       *airflow-common-env
@@ -93,29 +94,29 @@ services:
       retries: 5
       start_period: 60s
   
-  pyspark-notebook:
-    image: jupyter/pyspark-notebook
-    container_name: pyspark-notebook
-    restart: unless-stopped
-    ports:
-      - "4040:4040"
-      - "8888:8888"
-    environment:
-      - PYSPARK_PYTHON=python3
-      - PYSPARK_DRIVER_PYTHON=jupyter
-      - PYSPARK_DRIVER_PYTHON_OPTS=notebook
-      - SPARK_MASTER=spark://spark-master:7077
-      - JUPYTER_ENABLE_LAB=yes
-    volumes:
-      - ./notebooks:/home/jovyan/work
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:8888"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
-    networks:
-      - data-stack
+  # pyspark-notebook:
+  #   image: jupyter/pyspark-notebook
+  #   container_name: pyspark-notebook
+  #   restart: unless-stopped
+  #   ports:
+  #     - "4040:4040"
+  #     - "8888:8888"
+  #   environment:
+  #     - PYSPARK_PYTHON=python3
+  #     - PYSPARK_DRIVER_PYTHON=jupyter
+  #     - PYSPARK_DRIVER_PYTHON_OPTS=notebook
+  #     - SPARK_MASTER=spark://spark-master:7077
+  #     - JUPYTER_ENABLE_LAB=yes
+  #   volumes:
+  #     - ./notebooks:/home/jovyan/work
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://127.0.0.1:8888"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+  #     start_period: 30s
+  #   networks:
+  #     - data-stack
   
   postgres:
     image: postgres:14
@@ -206,7 +207,7 @@ services:
     env_file:
       - .env
     ports:
-      - "9000:9000"
+      - "9002:9000"
       - "9001:9001"
     volumes:
       - minio-data:/data
