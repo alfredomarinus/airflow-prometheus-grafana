@@ -63,7 +63,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-  
+
   airflow-worker:
     <<: *airflow-base
     container_name: airflow-worker
@@ -93,33 +93,9 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-  
-  # pyspark-notebook:
-  #   image: jupyter/pyspark-notebook
-  #   container_name: pyspark-notebook
-  #   restart: unless-stopped
-  #   ports:
-  #     - "4040:4040"
-  #     - "8888:8888"
-  #   environment:
-  #     - PYSPARK_PYTHON=python3
-  #     - PYSPARK_DRIVER_PYTHON=jupyter
-  #     - PYSPARK_DRIVER_PYTHON_OPTS=notebook
-  #     - SPARK_MASTER=spark://spark-master:7077
-  #     - JUPYTER_ENABLE_LAB=yes
-  #   volumes:
-  #     - ./notebooks:/home/jovyan/work
-  #   healthcheck:
-  #     test: ["CMD", "curl", "-f", "http://127.0.0.1:8888"]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 30s
-  #   networks:
-  #     - data-stack
-  
+
   postgres:
-    image: postgres:14
+    image: postgres:14.12
     container_name: postgres
     restart: unless-stopped
     env_file:
@@ -133,16 +109,16 @@ services:
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-U", "$POSTGRES_USER"]
+      test: ["CMD-SHELL", "pg_isready -U $POSTGRES_USER"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
     networks:
       - data-stack
-  
+
   flower:
-    image: mher/flower:latest
+    image: mher/flower:2.0.1
     container_name: flower
     depends_on:
       redis:
@@ -165,7 +141,7 @@ services:
       - data-stack
 
   redis:
-    image: redis:latest
+    image: redis:7.2.5-alpine
     container_name: redis
     restart: unless-stopped
     volumes:
@@ -181,17 +157,17 @@ services:
       - data-stack
 
   prometheus:
-    image: prom/prometheus
+    image: prom/prometheus:v2.52.0
     container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml    
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     networks:
       - data-stack
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:10.4.3
     container_name: grafana
     ports:
       - "3000:3000"
@@ -201,7 +177,7 @@ services:
       - data-stack
 
   minio:
-    image: minio/minio
+    image: quay.io/minio/minio:RELEASE.2025-05-24T17-08-30Z
     container_name: minio
     restart: unless-stopped
     env_file:
