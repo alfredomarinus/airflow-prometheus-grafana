@@ -11,6 +11,7 @@ x-airflow-common-env: &airflow-common-env
   AIRFLOW__METRICS__STATSD_HOST: statsd-exporter
   AIRFLOW__METRICS__STATSD_PORT: "9125"
   AIRFLOW__METRICS__STATSD_PREFIX: airflow
+  AIRFLOW__CORE__AUTH_MANAGER: ${AIRFLOW_AUTH_MANAGER}
 
 x-airflow-common-volumes: &airflow-common-volumes
   - ./airflow/logs:/opt/airflow/logs
