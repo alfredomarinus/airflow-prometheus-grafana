@@ -141,7 +141,7 @@ services:
       - data-stack
 
   redis:
-    image: redis:7.2.5-alpine
+    image: redis:7.2.5-alpine3.19
     container_name: redis
     restart: unless-stopped
     volumes:
@@ -157,7 +157,7 @@ services:
       - data-stack
 
   prometheus:
-    image: prom/prometheus:v2.52.0
+    image: prom/prometheus:v3.4.1
     container_name: prometheus
     ports:
       - "9090:9090"
@@ -167,7 +167,7 @@ services:
       - data-stack
 
   grafana:
-    image: grafana/grafana:10.4.3
+    image: grafana/grafana:latest
     container_name: grafana
     ports:
       - "3000:3000"
