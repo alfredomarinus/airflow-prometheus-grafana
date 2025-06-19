@@ -7,11 +7,11 @@ x-airflow-common-env: &airflow-common-env
   AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
   PYTHONPATH: /opt/airflow/scripts:/opt/airflow/dags
   RATELIMIT_STORAGE_URL: redis://redis:6379
-  AIRFLOW__METRICS__STATSD_ON: "True"
+  AIRFLOW__METRICS__STATSD_ON: "False"
   AIRFLOW__METRICS__STATSD_HOST: statsd-exporter
   AIRFLOW__METRICS__STATSD_PORT: "9125"
   AIRFLOW__METRICS__STATSD_PREFIX: airflow
-  AIRFLOW__CORE__AUTH_MANAGER: ${AIRFLOW_AUTH_MANAGER}
+  # AIRFLOW__CORE__AUTH_MANAGER: ${AIRFLOW_AUTH_MANAGER}
 
 x-airflow-common-volumes: &airflow-common-volumes
   - ./airflow/logs:/opt/airflow/logs
@@ -33,10 +33,25 @@ x-airflow-base: &airflow-base
       condition: service_healthy
     minio:
       condition: service_healthy
+    airflow-init:
+      condition: service_healthy
   networks:
     - data-stack
 
 services:
+  airflow-init:
+    image: apache/airflow:3.0.0-python3.11
+    container_name: airflow-init
+    env_file:
+      - .env
+    volumes:
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/scripts:/opt/airflow/scripts
+    entrypoint: /entrypoint.sh
+    command: version
+
   airflow-webserver:
     <<: *airflow-base
     container_name: airflow-webserver
@@ -46,7 +61,7 @@ services:
       *airflow-common-env
     volumes:
       *airflow-common-volumes
-    command: bash /opt/airflow/scripts/airflow-entrypoint.sh
+    # command: bash /opt/airflow/scripts/airflow-entrypoint.sh
     healthcheck:
       test: ["CMD", "curl", "-f", "http://127.0.0.1:8080/health"]
       interval: 30s
@@ -106,7 +121,7 @@ services:
       *airflow-common-env
     volumes:
       *airflow-common-volumes
-    command: airflow api
+    command: airflow api-server
     ports: 
       - "8793:8793"
     healthcheck:
