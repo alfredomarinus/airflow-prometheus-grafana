@@ -7,6 +7,10 @@ x-airflow-common-env: &airflow-common-env
   AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
   PYTHONPATH: /opt/airflow/scripts:/opt/airflow/dags
   RATELIMIT_STORAGE_URL: redis://redis:6379
+  AIRFLOW__METRICS__STATSD_ON: "True"
+  AIRFLOW__METRICS__STATSD_HOST: statsd-exporter
+  AIRFLOW__METRICS__STATSD_PORT: "9125"
+  AIRFLOW__METRICS__STATSD_PREFIX: airflow
 
 x-airflow-common-volumes: &airflow-common-volumes
   - ./airflow/logs:/opt/airflow/logs
