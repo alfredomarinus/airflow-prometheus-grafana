@@ -199,6 +199,20 @@ services:
       start_period: 30s
     networks:
       - data-stack
+  
+  statsd-exporter:
+    image: prom/statsd-exporter:v0.26.0
+    container_name: statsd-exporter
+    ports:
+      - "9102:9102"
+    volumes:
+      - ./prometheus/airflow_statsd_mapping.yml:/etc/statsd/exporter.yml:ro
+    command:
+      - --statsd.mapping-config=/etc/statsd/exporter.yml
+      - --web.listen-address=:9102
+      - --statsd.listen-udp=:9125
+    networks:
+      - data-stack
 
 volumes:
   postgres-db-volume:
