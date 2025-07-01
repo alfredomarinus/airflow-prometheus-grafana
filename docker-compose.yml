@@ -517,7 +517,8 @@ services:
     profiles:
       - monitoring
     ports:
-      - "9102:9102"
+      - "${STATSD_EXPORTER_PORT}:9102"
+      - "9125:9125/udp"
     volumes:
       - ./prometheus/airflow_statsd_mapping.yml:/etc/statsd/exporter.yml:ro
     command:
