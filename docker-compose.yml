@@ -332,6 +332,7 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
+    restart: always
 
   postgres:
     image: postgres:14.12
