@@ -434,10 +434,10 @@ services:
       --timeout 0
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
-      retries: 5
-      start_period: 10s
+      retries: 3
+      start_period: 30s
     networks:
       - data-stack
 
