@@ -457,8 +457,8 @@ services:
     container_name: minio
     restart: unless-stopped
     ports:
-      - "9002:9000"
-      - "9001:9001"
+      - "${MINIO_API_PORT}:9000"
+      - "${MINIO_CONSOLE_PORT}:9001"
     volumes:
       - minio-data:/data
     environment:
