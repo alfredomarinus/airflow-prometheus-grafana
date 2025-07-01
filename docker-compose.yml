@@ -274,6 +274,8 @@ services:
       retries: 5
       start_period: 30s
     restart: always
+    networks:
+      - data-stack
 
   airflow-worker:
     <<: *airflow-common
