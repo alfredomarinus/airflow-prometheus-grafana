@@ -1,6 +1,136 @@
+x-airflow-common: &airflow-common
+  image: apache/airflow:3.0.2
+  environment: &airflow-common-env
+    # Core Configuration
+    AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR}
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
+    AIRFLOW__CELERY__RESULT_BACKEND: ${AIRFLOW__CELERY__RESULT_BACKEND}
+    AIRFLOW__CELERY__BROKER_URL: ${AIRFLOW__CELERY__BROKER_URL}
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+    AIRFLOW__API__SECRET_KEY: ${AIRFLOW__API__SECRET_KEY}
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__TEST_CONNECTION: 'Enabled'
+
+    # Authentication Configuration (FAB Auth Manager)
+    AIRFLOW__CORE__AUTH_MANAGER: 'airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager'
+    AIRFLOW__API__AUTH_BACKENDS: 'airflow.providers.fab.auth_manager.api.auth.backend.basic_auth,airflow.providers.fab.auth_manager.api.auth.backend.session'
+    AIRFLOW__API__EXPOSE_CONFIG: ${AIRFLOW__API__EXPOSE_CONFIG}
+    
+    # FAB Auth Manager Configuration
+    AIRFLOW__FAB__AUTH_TYPE: 'AUTH_DB'
+    AIRFLOW__FAB__AUTH_ROLE_ADMIN: 'Admin'
+    AIRFLOW__FAB__AUTH_ROLE_PUBLIC: 'Public'
+    
+    # FAB Database Configuration - Prevent duplicate role creation
+    AIRFLOW__FAB__AUTH_ROLE_SYNC_AT_LOGIN: 'false'
+    AIRFLOW__FAB__AUTH_USER_REGISTRATION: 'false'
+    AIRFLOW__FAB__AUTH_USER_REGISTRATION_ROLE: 'Public'
+
+    # Logging Configuration
+    AIRFLOW__LOGGING__REMOTE_LOGGING: ${AIRFLOW__LOGGING__REMOTE_LOGGING}
+    AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID: ${AIRFLOW__LOGGING__REMOTE_LOG_CONN_ID:-minio_conn}
+    AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER: ${AIRFLOW__LOGGING__REMOTE_BASE_LOG_FOLDER:-s3://airflow-logs}
+    AIRFLOW__LOGGING__ENCRYPT_S3_LOGS: ${AIRFLOW__LOGGING__ENCRYPT_S3_LOGS}
+    AIRFLOW__LOGGING__LOGGING_LEVEL: ${AIRFLOW__LOGGING__LOGGING_LEVEL}
+    AIRFLOW__LOGGING__FAB_LOGGING_LEVEL: WARN
+    AIRFLOW__LOGGING__COLORED_CONSOLE_LOG: 'false'
+
+    # Cleaned up expired sessions
+    AIRFLOW__API__SESSION_LIFETIME_SECONDS: 86400
+    AIRFLOW__API__CHECK_SESSION_PERMANENT: true
+    
+    # Timezone Configuration
+    AIRFLOW__CORE__DEFAULT_TIMEZONE: ${AIRFLOW__CORE__DEFAULT_TIMEZONE}
+    AIRFLOW__API__DEFAULT_UI_TIMEZONE: ${AIRFLOW__API__DEFAULT_UI_TIMEZONE}
+    
+    # External Connections
+    AIRFLOW_CONN_MINIO_CONN: ${AIRFLOW_CONN_MINIO_CONN:-}
+    CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP: ${CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP:-true}
+    
+    # Security Configuration
+    AIRFLOW__API__CSRF_ENABLED: 'true'
+    AIRFLOW__CORE__SENSITIVE_VAR_CONN_NAMES: 'AIRFLOW_CONN_.*,AIRFLOW_VAR_.*'
+    AIRFLOW__API__COOKIE_SECURE: 'false'
+    AIRFLOW__API__COOKIE_SAMESITE: 'Lax'
+    
+    # Performance Configuration
+    AIRFLOW__CORE__PARALLELISM: ${AIRFLOW__CORE__PARALLELISM:-32}
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: ${AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG:-16}
+    AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: ${AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG:-16}
+    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: ${AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT:-30}
+    AIRFLOW__CORE__ENABLE_XCOM_PICKLING: 'false'
+    AIRFLOW__CORE__KILLED_TASK_CLEANUP_TIME: '60'
+    
+    # DAG Configuration
+    AIRFLOW__CORE__DAGS_FOLDER: '/opt/airflow/dags'
+    AIRFLOW__CORE__STORE_DAG_CODE: 'true'
+    AIRFLOW__CORE__STORE_SERIALIZED_DAGS: 'true'
+    AIRFLOW__CORE__MIN_SERIALIZED_DAG_UPDATE_INTERVAL: 30
+    AIRFLOW__CORE__MIN_SERIALIZED_DAG_FETCH_INTERVAL: 10
+    
+    # Scheduler Configuration  
+    AIRFLOW__SCHEDULER__PARSING_PROCESSES: ${AIRFLOW__SCHEDULER__PARSING_PROCESSES:-2}
+    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: ${AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL:-30}
+    AIRFLOW__SCHEDULER__USE_FILE_WATCHER: 'true'
+    AIRFLOW__SCHEDULER__FILE_PARSING_SORT_MODE: 'modified_time'
+    AIRFLOW__SCHEDULER__DAG_DISCOVERY_SAFE_MODE: 'false'
+    AIRFLOW__SCHEDULER__SCHEDULE_AFTER_TASK_EXECUTION: 'true'
+    AIRFLOW__SCHEDULER__MAX_DAGRUNS_TO_CREATE_PER_LOOP: ${AIRFLOW__SCHEDULER__MAX_DAGRUNS_TO_CREATE_PER_LOOP:-10}
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    AIRFLOW__SCHEDULER__CATCHUP_BY_DEFAULT: 'false'
+    AIRFLOW__SCHEDULER__MAX_TIS_PER_QUERY: 512
+    AIRFLOW__SCHEDULER__PROCESSOR_POLL_INTERVAL: '1'
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: '300'
+    
+    # API Server Configuration (Airflow 3.0 specific)
+    AIRFLOW__API__ACCESS_CONTROL_ALLOW_HEADERS: '*'
+    AIRFLOW__API__ACCESS_CONTROL_ALLOW_METHODS: '*'
+    AIRFLOW__API__ACCESS_CONTROL_ALLOW_ORIGINS: '*'
+    AIRFLOW__API__ENABLE_EXPERIMENTAL_API: 'true'
+    
+    # Celery Configuration
+    AIRFLOW__CELERY__WORKER_CONCURRENCY: ${AIRFLOW__CELERY__WORKER_CONCURRENCY:-16}
+    AIRFLOW__CELERY__FLOWER_HOST: 0.0.0.0
+    AIRFLOW__CELERY__FLOWER_PORT: 5555
+    AIRFLOW__CELERY__OPERATION_TIMEOUT: 1.0
+    
+    # Metrics Configuration
+    AIRFLOW__METRICS__STATSD_ON: ${AIRFLOW__METRICS__STATSD_ON:-false}
+    AIRFLOW__METRICS__STATSD_HOST: ${AIRFLOW__METRICS__STATSD_HOST:-statsd-exporter}
+    AIRFLOW__METRICS__STATSD_PORT: ${AIRFLOW__METRICS__STATSD_PORT:-9125}
+    AIRFLOW__METRICS__STATSD_PREFIX: ${AIRFLOW__METRICS__STATSD_PREFIX:-airflow}
+    
+    # # Rate Limit Backend
+    AIRFLOW__FAB__RATE_LIMIT_STORAGE_URI: redis://redis:6379
+
+    # Additional packages
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+
+    # Additional security configurations
+    AIRFLOW__CORE__HIDE_SENSITIVE_VAR_CONN_FIELDS: 'true'
+    AIRFLOW__API__MAXIMUM_PAGE_LIMIT: '100'
+    AIRFLOW__API__FALLBACK_PAGE_LIMIT: '100'
+    
+    # Enhanced logging
+    AIRFLOW__LOGGING__ENABLE_TASK_CONTEXT_LOGGER: 'true'
+    AIRFLOW__LOGGING__TASK_LOG_PREFIX_TEMPLATE: '{{ ti.dag_id }}/{{ ti.task_id }}/{{ ts }}/{{ try_number }}'
+  volumes:
+    - ${AIRFLOW_PROJ_DIR:-./airflow}/dags:/opt/airflow/dags
+    - ${AIRFLOW_PROJ_DIR:-./airflow}/logs:/opt/airflow/logs
+    - ${AIRFLOW_PROJ_DIR:-./airflow}/config:/opt/airflow/config
+    - ${AIRFLOW_PROJ_DIR:-./airflow}/plugins:/opt/airflow/plugins
+  user: "${AIRFLOW_UID:-50000}:0"
+  depends_on: &airflow-common-depends-on
+    redis:
+      condition: service_healthy
+    postgres:
+      condition: service_healthy
+
 services:
   # Database initialization service
   airflow-init:
+    <<: *airflow-common
     container_name: airflow-init
     environment:
       
@@ -21,6 +151,7 @@ services:
 
   # Main API Server (replaces webserver)
   airflow-api-server:
+    <<: *airflow-common
     container_name: airflow-api-server
     ports:
       - "8080:8080"  # Main UI port
@@ -41,6 +172,7 @@ services:
       start_period: 60s
 
   airflow-scheduler:
+    <<: *airflow-common
     container_name: airflow-scheduler
     environment:
       
@@ -62,6 +194,7 @@ services:
       start_period: 60s
 
   airflow-worker:
+    <<: *airflow-common
     container_name: airflow-worker
     environment:
       
@@ -83,6 +216,7 @@ services:
       start_period: 60s
 
   airflow-triggerer:
+    <<: *airflow-common
     container_name: airflow-triggerer
     environment:
       
