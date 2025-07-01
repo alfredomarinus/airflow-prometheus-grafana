@@ -441,6 +441,8 @@ services:
       - "${PROMETHEUS_PORT}:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./airflow/config/alerts:/etc/prometheus/alerts:ro
+      - prometheus-data:/prometheus
     networks:
       - data-stack
 
