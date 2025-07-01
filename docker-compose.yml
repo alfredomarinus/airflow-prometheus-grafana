@@ -321,7 +321,7 @@ services:
     container_name: airflow-triggerer
     environment:
       <<: *airflow-common-env
-    command: airflow triggerer
+    command: triggerer
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
