@@ -467,10 +467,10 @@ services:
       MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL:-http://localhost:9001}
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:9001/minio/health/ready"]
-      interval: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:9001/minio/health/ready"]
+      interval: 15s
       timeout: 5s
-      retries: 5
+      retries: 3
       start_period: 30s
     networks:
       - data-stack
