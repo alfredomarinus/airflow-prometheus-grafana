@@ -491,9 +491,13 @@ services:
 
 volumes:
   postgres-db-volume:
+    driver: local
   redis-data:
+    driver: local
+  prometheus-data:
+    driver: local
   minio-data:
-  grafana-storage:
+    driver: local
 
 networks:
   data-stack:
