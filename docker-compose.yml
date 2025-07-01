@@ -538,6 +538,8 @@ volumes:
     driver: local
   minio-data:
     driver: local
+  grafana-storage:
+    driver: local
 
 networks:
   data-stack:
