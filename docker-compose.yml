@@ -133,7 +133,7 @@ services:
     <<: *airflow-common
     container_name: airflow-init
     environment:
-      
+      <<: *airflow-common-env
     volumes:
       
     command:
@@ -157,8 +157,7 @@ services:
       - "8080:8080"  # Main UI port
       - "8081:8081"  # API port
     environment:
-      
-      # API Server specific configs
+      <<: *airflow-common-env
       AIRFLOW__API__ENABLE_EXPERIMENTAL_API: "true"
       AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     volumes:
@@ -175,7 +174,7 @@ services:
     <<: *airflow-common
     container_name: airflow-scheduler
     environment:
-      
+      <<: *airflow-common-env
     volumes:
       
     command: airflow scheduler
@@ -197,7 +196,7 @@ services:
     <<: *airflow-common
     container_name: airflow-worker
     environment:
-      
+      <<: *airflow-common-env
     volumes:
       
     command: celery worker
@@ -219,7 +218,7 @@ services:
     <<: *airflow-common
     container_name: airflow-triggerer
     environment:
-      
+      <<: *airflow-common-env
     volumes:
       
     command: airflow triggerer
