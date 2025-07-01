@@ -435,6 +435,8 @@ services:
   prometheus:
     image: prom/prometheus:v3.4.1
     container_name: prometheus
+    profiles:
+      - monitoring
     ports:
       - "9090:9090"
     volumes:
