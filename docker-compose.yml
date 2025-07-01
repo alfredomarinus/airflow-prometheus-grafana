@@ -323,12 +323,9 @@ services:
       <<: *airflow-common-env
     command: airflow triggerer
     depends_on:
+      <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
       interval: 30s
