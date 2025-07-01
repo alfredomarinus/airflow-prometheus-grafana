@@ -522,9 +522,9 @@ services:
     volumes:
       - ./airflow/config/statsd-mapping.yml:/tmp/statsd-mapping.yml:ro
     command:
-      - --statsd.mapping-config=/tmp/statsd-mapping.yml
-      - --web.listen-address=:9102
-      - --statsd.listen-udp=:9125
+      - '--statsd.mapping-config=/tmp/statsd-mapping.yml'
+      - '--web.listen-address=:9102'
+      - '--log.level=info'
     networks:
       - data-stack
 
