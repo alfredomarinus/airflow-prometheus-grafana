@@ -514,6 +514,7 @@ services:
   statsd-exporter:
     image: prom/statsd-exporter:v0.26.0
     container_name: statsd-exporter
+    restart: always
     profiles:
       - monitoring
     ports:
