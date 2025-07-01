@@ -227,6 +227,8 @@ services:
       redis:
         condition: service_healthy
     user: "0:0"
+    networks:
+      - data-stack
 
   airflow-api-server:
     <<: *airflow-common
