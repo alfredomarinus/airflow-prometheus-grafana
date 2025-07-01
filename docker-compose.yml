@@ -372,7 +372,7 @@ services:
   postgres:
     image: postgres:14.12
     container_name: postgres
-    restart: unless-stopped
+    restart: always
     env_file:
       - .env
     ports:
