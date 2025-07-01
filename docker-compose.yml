@@ -419,7 +419,7 @@ services:
   redis:
     image: redis:7.2.5-alpine3.19
     container_name: redis
-    restart: unless-stopped
+    restart: always
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
