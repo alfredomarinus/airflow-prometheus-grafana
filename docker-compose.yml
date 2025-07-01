@@ -453,6 +453,8 @@ services:
       - '--web.enable-admin-api'
       - '--storage.tsdb.wal-compression'
     restart: always
+    depends_on:
+    - statsd-exporter
     networks:
       - data-stack
 
