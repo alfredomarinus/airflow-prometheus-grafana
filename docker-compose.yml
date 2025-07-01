@@ -354,6 +354,20 @@ services:
         condition: service_completed_successfully
     networks:
       - data-stack
+    
+  airflow-cli:
+    <<: *airflow-common
+    profiles:
+      - debug
+    environment:
+      <<: *airflow-common-env
+      CONNECTION_CHECK_MAX_COUNT: "0"
+    command:
+      - bash
+      - -c
+      - airflow
+    depends_on:
+      <<: *airflow-common-depends-on
 
   postgres:
     image: postgres:14.12
