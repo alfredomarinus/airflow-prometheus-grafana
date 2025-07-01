@@ -405,21 +405,22 @@ services:
   flower:
     image: mher/flower:2.0.1
     container_name: flower
+    restart: always
     depends_on:
       redis:
         condition: service_healthy
     ports:
       - "5555:5555"
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - FLOWER_PORT=5555
-      - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
+    # environment:
+    #   - CELERY_BROKER_URL=redis://redis:6379/0
+    #   - FLOWER_PORT=5555
+    #   - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
     command: celery flower
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://${FLOWER_USERNAME}:${FLOWER_PASSWORD}@127.0.0.1:5555 || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      test: ["CMD-SHELL", "wget --spider -q http://${FLOWER_USERNAME}:${FLOWER_PASSWORD}@localhost:5555 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
       start_period: 30s
     networks:
       - data-stack
