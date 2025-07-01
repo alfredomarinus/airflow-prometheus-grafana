@@ -452,6 +452,7 @@ services:
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
       - '--storage.tsdb.wal-compression'
+    restart: always
     networks:
       - data-stack
 
