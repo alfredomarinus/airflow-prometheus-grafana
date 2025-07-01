@@ -143,6 +143,7 @@ services:
       _AIRFLOW_WWW_USER_ROLE: ${_AIRFLOW_WWW_USER_ROLE}
     volumes:
       - ${AIRFLOW_PROJ_DIR}:/sources
+    entrypoint: /bin/bash
     command:
       - -c
       - |
