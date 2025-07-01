@@ -261,7 +261,7 @@ services:
     container_name: airflow-scheduler
     environment:
       <<: *airflow-common-env
-    command: airflow scheduler
+    command: scheduler
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
