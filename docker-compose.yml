@@ -370,7 +370,7 @@ services:
       <<: *airflow-common-depends-on
 
   postgres:
-    image: postgres:14.12
+    image: postgres:17.5-alpine
     container_name: postgres
     restart: always
     ports:
@@ -428,7 +428,7 @@ services:
       - data-stack
 
   redis:
-    image: redis:7.2.5-alpine3.19
+    image: redis:7.4.1-alpine
     container_name: redis
     restart: always
     expose:
@@ -489,7 +489,7 @@ services:
       - data-stack
 
   minio:
-    image: quay.io/minio/minio:RELEASE.2025-05-24T17-08-30Z
+    image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
     container_name: minio
     restart: unless-stopped
     ports:
