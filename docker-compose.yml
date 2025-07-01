@@ -142,7 +142,7 @@ services:
       _AIRFLOW_WWW_USER_LASTNAME: ${_AIRFLOW_WWW_USER_LASTNAME}
       _AIRFLOW_WWW_USER_ROLE: ${_AIRFLOW_WWW_USER_ROLE}
     volumes:
-      - ${AIRFLOW_PROJ_DIR:-./airflow}:/sources
+      - ${AIRFLOW_PROJ_DIR}:/sources
     command:
       - -c
       - |
@@ -263,8 +263,6 @@ services:
     container_name: airflow-scheduler
     environment:
       <<: *airflow-common-env
-    volumes:
-      
     command: airflow scheduler
     depends_on:
       airflow-init:
