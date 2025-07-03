@@ -223,7 +223,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    user: "0:0"
     networks:
       - data-stack
 
@@ -246,14 +245,6 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.0'
-        reservations:
-          memory: 512M
-          cpus: '0.5'
 
   airflow-scheduler:
     <<: *airflow-common
@@ -275,14 +266,6 @@ services:
     restart: always
     networks:
       - data-stack
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.0'
-        reservations:
-          memory: 512M
-          cpus: '0.5'
 
   airflow-worker:
     <<: *airflow-common
@@ -306,14 +289,6 @@ services:
     restart: always
     networks:
       - data-stack
-    deploy:
-      resources:
-        limits:
-          memory: 4G
-          cpus: '2.0'
-        reservations:
-          memory: 1G
-          cpus: '1.0'
 
   airflow-triggerer:
     <<: *airflow-common
@@ -411,10 +386,10 @@ services:
         condition: service_healthy
     ports:
       - "5555:5555"
-    # environment:
-    #   - CELERY_BROKER_URL=redis://redis:6379/0
-    #   - FLOWER_PORT=5555
-    #   - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - FLOWER_PORT=5555
+      - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
     command: celery flower
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://${FLOWER_USERNAME}:${FLOWER_PASSWORD}@localhost:5555 || exit 1"]
