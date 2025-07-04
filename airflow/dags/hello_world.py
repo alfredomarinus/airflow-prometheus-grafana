@@ -5,7 +5,7 @@ from datetime import datetime
 with DAG(
     dag_id='hello_world_dag',
     start_date=datetime(2025, 1, 1),
-    schedule_interval=None,
+    schedule=None,
     catchup=False,
     tags=['testing'],
 ) as dag:
