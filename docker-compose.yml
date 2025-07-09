@@ -294,8 +294,6 @@ services:
     restart: always
     depends_on:
     - statsd-exporter
-    networks:
-      - data-stack
 
   grafana:
     image: grafana/grafana:latest
@@ -306,8 +304,6 @@ services:
       - "3000:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
-    networks:
-      - data-stack
 
   minio:
     image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
@@ -329,8 +325,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
-    networks:
-      - data-stack
   
   statsd-exporter:
     image: prom/statsd-exporter:v0.26.0
@@ -347,8 +341,6 @@ services:
       - '--statsd.mapping-config=/tmp/statsd-mapping.yml'
       - '--web.listen-address=:9102'
       - '--log.level=info'
-    networks:
-      - data-stack
 
 volumes:
   postgres-db-volume:
