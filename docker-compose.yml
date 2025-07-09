@@ -242,21 +242,21 @@ services:
   flower:
     image: mher/flower:2.0.1
     command: celery flower
-  profiles:
-    - flower
-  ports:
-    - "5555:5555"
-  healthcheck:
-    test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-    interval: 15s
-    timeout: 5s
-    retries: 3
-    start_period: 30s
-  restart: always
-  depends_on:
-    <<: *airflow-common-depends-on
-    airflow-init:
-      condition: service_completed_successfully
+    profiles:
+      - flower
+    ports:
+      - "5555:5555"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
 
   redis:
     image: redis:7.4.1-alpine
