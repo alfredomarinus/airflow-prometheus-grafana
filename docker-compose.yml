@@ -230,6 +230,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: ${POSTGRES_HOST}
+      TZ: Asia/Kuala_Lumpur
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
@@ -242,11 +243,14 @@ services:
 
   flower:
     image: mher/flower:2.0.1
+    container_name: flower
     command: celery flower
     profiles:
       - flower
     ports:
       - "5555:5555"
+    environment:
+      TZ: Asia/Kuala_Lumpur
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
       interval: 15s
@@ -264,6 +268,8 @@ services:
     container_name: redis
     expose:
       - 6379
+    environment:
+      TZ: Asia/Kuala_Lumpur
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 15s
@@ -279,6 +285,8 @@ services:
       - monitoring
     ports:
       - "${PROMETHEUS_PORT}:9090"
+    environment:
+      TZ: Asia/Kuala_Lumpur
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./airflow/config/alerts:/etc/prometheus/alerts:ro
@@ -303,6 +311,8 @@ services:
       - dashboard
     ports:
       - "3000:3000"
+    environment:
+      TZ: Asia/Kuala_Lumpur
     volumes:
       - grafana-storage:/var/lib/grafana
 
@@ -319,6 +329,7 @@ services:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
       MINIO_BROWSER_REDIRECT_URL: ${MINIO_BROWSER_REDIRECT_URL}
+      TZ: Asia/Kuala_Lumpur
     command: server /data --console-address ":9001"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/minio/health/ready"]
@@ -336,6 +347,8 @@ services:
     ports:
       - "${STATSD_EXPORTER_PORT}:9102"
       - "9125:9125/udp"
+    environment:
+      TZ: Asia/Kuala_Lumpur
     volumes:
       - ./prometheus/statsd-mapping.yml:/tmp/statsd-mapping.yml:ro
     command:
