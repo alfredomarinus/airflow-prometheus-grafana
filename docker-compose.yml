@@ -481,8 +481,3 @@ volumes:
     driver: local
   grafana-storage:
     driver: local
-
-networks:
-  data-stack:
-    driver: bridge
-    name: data-stack
