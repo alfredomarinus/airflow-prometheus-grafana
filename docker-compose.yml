@@ -240,26 +240,22 @@ services:
 
   flower:
     image: mher/flower:2.0.1
-    container_name: flower
-    restart: always
-    depends_on:
-      redis:
-        condition: service_healthy
-    ports:
-      - "5555:5555"
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - FLOWER_PORT=5555
-      - FLOWER_BASIC_AUTH=${FLOWER_USERNAME}:${FLOWER_PASSWORD}
     command: celery flower
-    healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://${FLOWER_USERNAME}:${FLOWER_PASSWORD}@localhost:5555 || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-    networks:
-      - data-stack
+  profiles:
+    - flower
+  ports:
+    - "5555:5555"
+  healthcheck:
+    test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+    interval: 15s
+    timeout: 5s
+    retries: 3
+    start_period: 30s
+  restart: always
+  depends_on:
+    <<: *airflow-common-depends-on
+    airflow-init:
+      condition: service_completed_successfully
 
   redis:
     image: redis:7.4.1-alpine
