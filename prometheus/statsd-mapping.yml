@@ -17,13 +17,11 @@ mappings:
       operator: "$1"
 
   - match: airflow.scheduler_heartbeat
-    match_type: regex
     name: "airflow_scheduler_heartbeat"
     labels:
       type: counter
 
   - match: airflow.dag_processor_heartbeat
-    match_type: regex
     name: "airflow_dag_processor_heartbeat"
     labels:
       type: counter
