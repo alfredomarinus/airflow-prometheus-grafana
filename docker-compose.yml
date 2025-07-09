@@ -337,7 +337,7 @@ services:
       - "${STATSD_EXPORTER_PORT}:9102"
       - "9125:9125/udp"
     volumes:
-      - ./airflow/config/statsd-mapping.yml:/tmp/statsd-mapping.yml:ro
+      - ./prometheus/statsd-mapping.yml:/tmp/statsd-mapping.yml:ro
     command:
       - '--statsd.mapping-config=/tmp/statsd-mapping.yml'
       - '--web.listen-address=:9102'
