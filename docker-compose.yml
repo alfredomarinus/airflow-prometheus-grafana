@@ -6,6 +6,7 @@ x-airflow-common:
     &airflow-common-env
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: 'http://airflow-api-server:8080/execution/'
+    TZ: Asia/Kuala_Lumpur
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS}
     AIRFLOW_CONFIG: '/opt/airflow/config/airflow.cfg'
   volumes:
