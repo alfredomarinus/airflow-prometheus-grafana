@@ -1,0 +1,29 @@
+groups:
+  - name: airflow_alerts
+    rules:
+      - alert: AirflowSchedulerHeartbeatMissing
+        expr: rate(airflow_scheduler_heartbeat[5m]) == 0
+        for: 3m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Airflow scheduler heartbeat missing"
+          description: "The Airflow scheduler has not emitted a heartbeat for more than 3 minutes."
+
+      - alert: AirflowDagRunFailed
+        expr: increase(airflow_dagrun_failed[10m]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Airflow DAG run failed"
+          description: "DAG {{ $labels.dag_id }} has had a failed run in the last 10 minutes."
+
+      - alert: AirflowTaskDurationHigh
+        expr: airflow_task_duration > 600
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Airflow task running too long"
+          description: "Task {{ $labels.task_id }} in DAG {{ $labels.dag_id }} has been running for more than 10 minutes."
