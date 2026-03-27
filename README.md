@@ -23,6 +23,7 @@ A Docker Compose stack running **Apache Airflow 3.0** with **Celery executor**, 
 
 - [Docker](https://docs.docker.com/get-docker/) ≥ 24.0
 - [Docker Compose](https://docs.docker.com/compose/install/) ≥ 2.20
+- At least **8 GB RAM** allocated to Docker
 
 ## Quick Start
 
@@ -33,8 +34,9 @@ git clone <repo-url> && cd airflow-prometheus-grafana
 # 2. Copy the example env file and edit as needed
 cp .env.example .env
 
-# 3. Start all services (core + monitoring + dashboard)
-make up
+# 3. Generate required Airflow secret keys (required for security)
+# Generate fernet key:
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())" | xargs -I {} sed -i '' 's/AIRFLOW__CORE__FERNET_KEY=CHANGE_ME/AIRFLOW__CORE__FERNET_KEY={}/' .env
 
 # 4. Wait for the init container to finish (~60 s on first run)
 docker-compose logs -f airflow-init
