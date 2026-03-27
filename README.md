@@ -64,7 +64,7 @@ make clean           # Remove cache files and logs
 ## Project Structure
 
 ```
-.
+airflow-prometheus-grafana/
 ├── airflow/
 │   ├── config/
 │   │   ├── airflow.cfg          # Airflow configuration
