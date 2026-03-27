@@ -38,37 +38,28 @@ cp .env.example .env
 # Generate fernet key:
 python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())" | xargs -I {} sed -i '' 's/AIRFLOW__CORE__FERNET_KEY=CHANGE_ME/AIRFLOW__CORE__FERNET_KEY={}/' .env
 
-# 4. Wait for the init container to finish (~60 s on first run)
-docker-compose logs -f airflow-init
+# 4. Build and start all services
+make build && make up
 
-# 5. Open the Airflow UI
-open http://localhost:8080
+# 5. Check the logs to ensure everything started properly
+make logs
 ```
+
+> **Note:** On first run, the `airflow-init` container will initialize the database and create directories. This may take 1-2 minutes. Wait for all services to show `healthy` status.
 
 ## Common Operations
 
 ```bash
-make up          # Start core, monitoring, and dashboard profiles
-make down        # Stop all running services
-make restart     # Restart all running services
-make logs        # Follow all service logs
-make reset       # Stop everything, remove volumes, and restart fresh
-make status      # Show running containers
-make shell       # Open a bash shell in the API server
+make up              # Start services in background
+make down            # Stop all running services
+make restart         # Restart all running services
+make logs            # Follow all service logs
+make reset           # Stop everything, remove volumes, and restart fresh
+make status          # Show running containers
+make shell           # Open a bash shell in the API server
+make build           # Rebuild images (after Dockerfile changes)
+make clean           # Remove cache files and logs
 ```
-
-## Service URLs
-
-| Service            | URL                     | Default Credentials     |
-|--------------------|-------------------------|-------------------------|
-| Airflow UI         | http://localhost:8080    | `airflow` / `airflow`   |
-| MinIO Console      | http://localhost:9001    | `minioadmin` / `minioadmin` |
-| Prometheus         | http://localhost:9090    | —                       |
-| Grafana            | http://localhost:3000    | `admin` / `admin`       |
-| StatsD Exporter    | http://localhost:9102    | —                       |
-| Flower (optional)  | http://localhost:5555    | —                       |
-
-> Flower uses a separate profile: `docker-compose --profile flower up -d`
 
 ## Project Structure
 
@@ -92,6 +83,17 @@ make shell       # Open a bash shell in the API server
 ├── .env.example                 # Template for .env
 └── README.md
 ```
+
+## Service URLs
+
+| Service            | URL                     | Default Credentials     |
+|--------------------|-------------------------|-------------------------|
+| Airflow UI         | http://localhost:8080    | `airflow` / `airflow`   |
+| Flower (Celery)    | http://localhost:5555    | —                       |
+| MinIO Console      | http://localhost:9001    | `minioadmin` / `minioadmin` |
+| Prometheus         | http://localhost:9090    | —                       |
+| Grafana            | http://localhost:3000    | `admin` / `admin`       |
+| StatsD Exporter    | http://localhost:9102    | —                       |
 
 ## Adding DAGs
 
