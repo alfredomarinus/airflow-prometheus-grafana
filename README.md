@@ -11,6 +11,7 @@ A Docker Compose stack running **Apache Airflow 3.0** with **Celery executor**, 
 | **airflow-dag-processor** | Parses DAG files |
 | **airflow-worker** | Celery worker that executes tasks |
 | **airflow-triggerer** | Handles deferrable operators |
+| **flower** | Celery task monitoring dashboard (port `5555`) |
 | **postgres** | Metadata database |
 | **redis** | Celery message broker |
 | **minio** | S3-compatible remote log storage |
