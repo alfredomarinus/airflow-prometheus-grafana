@@ -1,23 +1,31 @@
-.PHONY: up down restart logs reset status shell
+.PHONY: up down restart logs reset status shell build clean
 
 up:
-	docker-compose --profile monitoring --profile dashboard up -d
+	docker compose up -d
 
 down:
-	docker-compose --profile monitoring --profile dashboard down
+	docker compose down
 
 restart:
-	docker-compose --profile monitoring --profile dashboard restart
+	docker compose restart
 
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 reset:
-	docker-compose --profile monitoring --profile dashboard down -v
-	docker-compose --profile monitoring --profile dashboard up -d
+	docker compose down -v
+	docker compose up -d
 
 status:
-	docker-compose ps
+	docker compose ps
 
 shell:
-	docker-compose exec airflow-api-server bash
+	docker compose exec airflow-api-server bash
+
+build:
+	docker compose build --no-cache
+
+clean:
+	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+	find . -type f -name "*.pyc" -delete
+	rm -rf logs/*
