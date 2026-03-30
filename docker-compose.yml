@@ -303,6 +303,11 @@ services:
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
       - '--storage.tsdb.wal-compression'
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     restart: always
     depends_on:
     - statsd-exporter
@@ -319,6 +324,11 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     depends_on:
       - prometheus
 
